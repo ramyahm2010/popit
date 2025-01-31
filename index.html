@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Pop It Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f4f4f4;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: white;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #333;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid black;
+            transition: background 0.3s;
+        }
+        
+        .bubble.active {
+            background: red;
+        }
+        
+        .bubble.clicked {
+            background: green;
+        }
+        
+        #level-display {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        #timer {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="level-display">Level 1</div>
+        <div id="timer">10</div>
+    </div>
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const levelDisplay = document.getElementById('level-display');
+        const timerDisplay = document.getElementById('timer');
+        let level = 1;
+        let bubbles = [];
+        let activeBubbles = [];
+        let bubblesLeft = 0;
+        let timer;
+        let timeLeft;
+
+        function createBubbles() {
+            gameContainer.innerHTML = '<div id="level-display">Level ' + level + '</div><div id="timer">10</div>';
+            bubbles = [];
+            activeBubbles = [];
+            bubblesLeft = Math.floor(Math.random() * 2) + 3; // Random 3-4 bubbles
+            const radius = 150;
+
+            for (let i = 0; i < 10; i++) {
+                let angle = (i / 10) * Math.PI * 2;
+                let bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                let x = Math.cos(angle) * radius + 175;
+                let y = Math.sin(angle) * radius + 175;
+                bubble.style.left = x + 'px';
+                bubble.style.top = y + 'px';
+                bubble.addEventListener('click', popBubble);
+                bubble.addEventListener('touchstart', popBubble);
+                gameContainer.appendChild(bubble);
+                bubbles.push(bubble);
+            }
+            activateRandomBubbles();
+            startTimer();
+        }
+
+        function activateRandomBubbles() {
+            let selectedIndices = [];
+            while (selectedIndices.length < bubblesLeft) {
+                let randomIndex = Math.floor(Math.random() * bubbles.length);
+                if (!selectedIndices.includes(randomIndex)) {
+                    selectedIndices.push(randomIndex);
+                    bubbles[randomIndex].classList.add('active');
+                    activeBubbles.push(bubbles[randomIndex]);
+                }
+            }
+        }
+
+        function popBubble(event) {
+            event.preventDefault(); // Prevent scrolling on touch devices
+            let target = event.target;
+            if (target.classList.contains('active')) {
+                target.classList.remove('active');
+                target.classList.add('clicked');
+                bubblesLeft--;
+                if (bubblesLeft === 0) {
+                    clearTimeout(timer);
+                    nextLevel();
+                }
+            }
+        }
+
+        function startTimer() {
+            timeLeft = 10;
+            timerDisplay.textContent = timeLeft;
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Game Over! You ran out of time.');
+                }
+            }, 1000);
+        }
+
+        function nextLevel() {
+            if (level < 10) {
+                level++;
+                levelDisplay.textContent = 'Level ' + level;
+                setTimeout(createBubbles, 1000);
+            } else {
+                alert('Congratulations! You finished all levels!');
+            }
+        }
+
+        createBubbles();
+    </script>
+</body>
+
+</html>
