@@ -21,24 +21,20 @@
             margin: 0 auto;
         }
         
-        #header-bar div,
-        #header-bar button {
-            margin: 0 10px;
-        }
-        
-        /* Centering the game container */
+        /* Game Container Styling */
         #game-container {
             position: relative;
             width: 80vw;
             height: 50vh;
             max-width: 400px;
             max-height: 400px;
-            background: white;
-            border-radius: 10px;
+            background: linear-gradient(to bottom, #f8f8f8, #e0e0e0);
+            border-radius: 15px;
             overflow: hidden;
-            border: 2px solid black;
+            border: 3px solid black;
             margin: 20px auto;
-            padding: 20px;
+            padding: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
             touch-action: none;
         }
         
@@ -46,7 +42,7 @@
         .bubble {
             width: 60px;
             height: 60px;
-            background: #333;
+            background: #777;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
@@ -60,7 +56,7 @@
         
         .bubble.clicked {
             background: green;
-            opacity: 0; /* Fades out smoothly */
+            opacity: 0;
         }
         
         /* Name Input Field */
@@ -93,7 +89,7 @@
             font-size: 18px;
         }
         
-        /* Reset Button Styles */
+        /* Reset Button */
         #reset-btn {
             margin-right: 10px;
             padding: 10px 20px;
@@ -177,6 +173,7 @@
                 bubble.addEventListener('touchstart', popBubble);
                 gameContainer.appendChild(bubble);
                 bubbles.push(bubble);
+                placeBubbleWithoutOverlap(bubble);
             }
 
             activateRandomBubbles();
@@ -193,20 +190,19 @@
                     bubble.classList.add('active');
                     activeBubbles.push(bubble);
                     bubblesLeft++;
-                    placeBubbleWithoutOverlap(bubble);
                 }
             }
         }
 
         function placeBubbleWithoutOverlap(bubble) {
-            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth;
-            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight;
+            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth - 20;
+            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight - 20;
             let attempts = 0;
             let overlap;
 
             do {
-                let randomX = Math.floor(Math.random() * maxWidth);
-                let randomY = Math.floor(Math.random() * maxHeight);
+                let randomX = Math.floor(Math.random() * maxWidth) + 10;
+                let randomY = Math.floor(Math.random() * maxHeight) + 10;
 
                 bubble.style.left = `${randomX}px`;
                 bubble.style.top = `${randomY}px`;
@@ -215,7 +211,7 @@
                     if (existingBubble === bubble) return false;
                     let dx = parseInt(existingBubble.style.left) - randomX;
                     let dy = parseInt(existingBubble.style.top) - randomY;
-                    return Math.sqrt(dx * dx + dy * dy) < 70; // Ensuring a minimum distance
+                    return Math.sqrt(dx * dx + dy * dy) < 70;
                 });
 
                 attempts++;
