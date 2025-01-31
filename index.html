@@ -116,15 +116,6 @@
             margin-right: 10px;
             padding: 10px 20px;
         }
-
-        /* Loading Style */
-        #loading {
-            display: none;
-            font-size: 24px;
-            color: #333;
-            text-align: center;
-            font-weight: bold;
-        }
     </style>
 </head>
 
@@ -145,8 +136,6 @@
         <button id="submit-name">Submit</button>
     </div>
 
-    <div id="loading">Loading...</div>
-
     <div id="game-container"></div>
 
     <script>
@@ -158,7 +147,6 @@
         const submitNameBtn = document.getElementById('submit-name');
         const userNameInput = document.getElementById('user-name-input');
         const userNameDisplay = document.getElementById('user-name');
-        const loading = document.getElementById('loading');
         let level = 1;
         let bubbles = [];
         let activeBubbles = [];
@@ -171,7 +159,6 @@
         const clickSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
         const successSound = new Audio('https://www.soundjay.com/button/success.wav');
         const failureSound = new Audio('https://www.soundjay.com/button/fail.wav');
-        const fireworksSound = new Audio('https://www.soundjay.com/button/fireworks.wav');
 
         submitNameBtn.addEventListener('click', handleNameSubmit);
         startBtn.addEventListener('click', startGame);
@@ -298,10 +285,8 @@
             if (level < 20) { // Changed to 20 levels
                 level++;
                 levelDisplay.textContent = 'Level: ' + level;
-                showLoading();
-                setTimeout(createBubbles, 1000); // Create new bubbles after the level is incremented
+                createBubbles();
                 successSound.play();
-                fireworksSound.play();
             } else {
                 alert('Congratulations! You finished all levels!');
                 resetGame();
@@ -318,14 +303,6 @@
                 resetBtn.style.display = 'none';
                 timerDisplay.textContent = 'Timer: 10'; // Reset timer display
                 document.body.style.backgroundColor = 'white'; // Reset background color
-            }, 1000);
-        }
-
-        // Show Loading
-        function showLoading() {
-            loading.style.display = 'block';
-            setTimeout(() => {
-                loading.style.display = 'none';
             }, 1000);
         }
     </script>
