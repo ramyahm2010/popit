@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Pop It Game</title>
     <style>
-        /* Header Bar Styles */
+        /* Dynamic Background */
+        body {
+            transition: background-color 0.5s;
+        }
+
         #header-bar {
             width: 90%;
             display: flex;
@@ -21,7 +25,6 @@
             margin: 0 auto;
         }
 
-        /* Game Container Styling */
         #game-container {
             position: relative;
             width: 80vw;
@@ -38,14 +41,13 @@
             touch-action: none;
         }
 
-        /* Bubble Styles */
         .bubble {
             width: 60px;
             height: 60px;
             background: #777;
             border-radius: 50%;
             cursor: pointer;
-            border: 2px solid black;
+            border: 3px solid black;
             transition: background 0.3s, opacity 0.5s ease-out;
             position: absolute;
         }
@@ -59,37 +61,16 @@
             opacity: 0;
         }
 
-        /* Name Input Field */
-        #name-input-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 100px;
-        }
-
-        #name-input-section input {
-            padding: 10px;
-            font-size: 18px;
-        }
-
-        #name-input-section button {
-            padding: 10px;
-            font-size: 18px;
-            margin-left: 10px;
-        }
-
-        /* Button Styles */
         button {
             padding: 10px;
             font-size: 18px;
             cursor: pointer;
         }
 
-        /* Timer and Level Display */
         #timer {
             font-size: 18px;
         }
 
-        /* Reset Button */
         #reset-btn {
             margin-right: 10px;
             padding: 10px 20px;
@@ -99,19 +80,11 @@
 
 <body>
 
-    <!-- Header Bar -->
     <div id="header-bar">
         <div id="timer">Timer: 10</div>
         <button id="start-btn">Start Game</button>
         <div id="level-display">Level: 1</div>
-        <div id="user-name"></div>
         <button id="reset-btn" style="display: none;">Reset Game</button>
-    </div>
-
-    <!-- Name Input Section -->
-    <div id="name-input-section">
-        <input type="text" id="user-name-input" placeholder="Enter your name" />
-        <button id="submit-name">Submit</button>
     </div>
 
     <div id="game-container"></div>
@@ -122,41 +95,25 @@
         const timerDisplay = document.getElementById('timer');
         const startBtn = document.getElementById('start-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const submitNameBtn = document.getElementById('submit-name');
-        const userNameInput = document.getElementById('user-name-input');
-        const userNameDisplay = document.getElementById('user-name');
 
         let level = 1;
         let bubbles = [];
         let activeBubbles = [];
         let bubblesLeft = 0;
         let timer;
-        let timeLeft;
-        let userName = '';
+        let timeLeft = 10;
+        let gameRunning = false;
 
-        submitNameBtn.addEventListener('click', handleNameSubmit);
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
 
-        function handleNameSubmit() {
-            const name = userNameInput.value.trim();
-            if (name) {
-                userName = name;
-                userNameDisplay.textContent = `Hello, ${userName}`;
-                document.getElementById('name-input-section').style.display = 'none';
-                alert(`Welcome, ${userName}!`);
-            } else {
-                alert("Please enter your name.");
-            }
-        }
-
         function startGame() {
-            if (!userName) {
-                alert("Please enter your name first.");
-                return;
-            }
+            if (gameRunning) return;
+            gameRunning = true;
             startBtn.style.display = 'none';
             resetBtn.style.display = 'inline';
+            timeLeft = 10;
+            timerDisplay.textContent = 'Timer: 10';
             createBubbles();
         }
 
@@ -224,6 +181,8 @@
         }
 
         function popBubble(event) {
+            if (!gameRunning) return;
+
             event.preventDefault();
             let target = event.target;
             if (target.classList.contains('active')) {
@@ -232,11 +191,13 @@
                 bubblesLeft--;
                 if (bubblesLeft === 0) {
                     clearInterval(timer);
+                    document.body.style.backgroundColor = 'green';
+                    setTimeout(() => document.body.style.backgroundColor = getRandomBackground(), 1000);
                     nextLevel();
                 }
             } else {
-                alert('You failed the level! You clicked the wrong bubble.');
-                resetGame();
+                document.body.style.backgroundColor = 'red';
+                setTimeout(resetGame, 1000);
             }
         }
 
@@ -247,13 +208,45 @@
             timer = setInterval(() => {
                 if (--timeLeft <= 0) {
                     clearInterval(timer);
-                    alert('Game Over! You ran out of time.');
-                    resetGame();
+                    document.body.style.backgroundColor = 'red';
+                    setTimeout(resetGame, 1000);
                 }
                 timerDisplay.textContent = 'Timer: ' + timeLeft;
             }, 1000);
         }
+
+        function nextLevel() {
+            if (level < 50) { 
+                level++;
+                levelDisplay.textContent = 'Level: ' + level;
+                setTimeout(createBubbles, 1000);
+            } else {
+                alert('Congratulations! You finished all levels!');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            gameRunning = false;
+            clearInterval(timer);
+            timeLeft = 10;
+            timerDisplay.textContent = 'Timer: 10';
+            level = 1;
+            levelDisplay.textContent = 'Level: 1';
+            gameContainer.innerHTML = '';
+            startBtn.style.display = 'inline';
+            resetBtn.style.display = 'none';
+            document.body.style.backgroundColor = getRandomBackground();
+        }
+
+        function getRandomBackground() {
+            const colors = ['#f3f3f3', '#d1e0e0', '#f8e0e0', '#d9f2d9', '#e6e0f2'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        document.body.style.backgroundColor = getRandomBackground();
     </script>
 
 </body>
+
 </html>
