@@ -6,14 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Pop It Game</title>
     <style>
-        body {
+        /* Header Bar Styles */
+        
+        #header-bar {
+            width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            padding: 10px 30px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #f4f4f4;
+            border-radius: 5px;
+            margin-right: 30px;
+            /* Added margin on the right */
         }
+        
+        #header-bar div,
+        #header-bar button {
+            margin: 0 10px;
+        }
+        /* Centering the game container and adding margin and padding */
         
         #game-container {
             position: relative;
@@ -26,6 +40,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: 0 auto;
+            /* Centers the circle horizontally */
+            padding: 20px;
+            /* Adds space inside the circle */
+            margin-top: 50px;
+            /* Adds space from the top */
             touch-action: none;
         }
         
@@ -48,48 +68,115 @@
             background: green;
         }
         
-        #level-display {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
-            font-weight: bold;
+        #user-name {
+            font-size: 16px;
+            font-weight: normal;
+            margin-left: 20px;
+            /* Added margin left to push it right */
+        }
+        /* Name input field */
+        
+        #name-input-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 100px;
         }
         
+        #name-input-section input {
+            padding: 10px;
+            font-size: 18px;
+        }
+        
+        #name-input-section button {
+            padding: 10px;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+        /* Button Styles */
+        
+        button {
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        /* Timer and Level Display */
+        
         #timer {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: red;
+            font-size: 18px;
         }
     </style>
 </head>
 
 <body>
-    <div id="game-container">
-        <div id="level-display">Level 1</div>
-        <div id="timer">10</div>
+
+    <!-- Header Bar -->
+    <div id="header-bar">
+        <div id="timer">Timer: 10</div>
+        <button id="start-btn">Start Game</button>
+        <div id="level-display">Level: 1</div>
+        <div id="user-name"> </div>
+        <!-- User's name will be displayed here -->
+        <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
+
+    <!-- Name Input Section -->
+    <div id="name-input-section">
+        <input type="text" id="user-name-input" placeholder="Enter your name" />
+        <button id="submit-name">Submit</button>
+    </div>
+
+    <div id="game-container"></div>
+
     <script>
         const gameContainer = document.getElementById('game-container');
         const levelDisplay = document.getElementById('level-display');
         const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const submitNameBtn = document.getElementById('submit-name');
+        const userNameInput = document.getElementById('user-name-input');
+        const userNameDisplay = document.getElementById('user-name');
         let level = 1;
         let bubbles = [];
         let activeBubbles = [];
         let bubblesLeft = 0;
         let timer;
         let timeLeft;
+        let userName = ''; // Store the user's name
 
+        submitNameBtn.addEventListener('click', handleNameSubmit);
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+
+        // Handle Name Submit
+        function handleNameSubmit() {
+            const name = userNameInput.value.trim();
+            if (name) {
+                userName = name;
+                userNameDisplay.textContent = `Hello, ${userName}`; // Display user name in header
+                document.getElementById('name-input-section').style.display = 'none'; // Hide name input
+                alert(`Welcome, ${userName}!`);
+            } else {
+                alert("Please enter your name.");
+            }
+        }
+
+        // Start Game Function
+        function startGame() {
+            if (!userName) {
+                alert("Please enter your name first.");
+                return;
+            }
+            startBtn.style.display = 'none';
+            resetBtn.style.display = 'inline';
+            createBubbles();
+        }
+
+        // Create Bubbles and Start Timer
         function createBubbles() {
-            gameContainer.innerHTML = '<div id="level-display">Level ' + level + '</div><div id="timer">10</div>';
             bubbles = [];
             activeBubbles = [];
-            bubblesLeft = Math.floor(Math.random() * 2) + 3; // Random 3-4 bubbles
+            bubblesLeft = Math.floor(Math.random() * 2) + 3;
             const radius = 150;
 
             for (let i = 0; i < 10; i++) {
@@ -109,6 +196,7 @@
             startTimer();
         }
 
+        // Activate Random Bubbles
         function activateRandomBubbles() {
             let selectedIndices = [];
             while (selectedIndices.length < bubblesLeft) {
@@ -121,45 +209,66 @@
             }
         }
 
+        // Pop Bubble (correct or wrong click)
         function popBubble(event) {
-            event.preventDefault(); // Prevent scrolling on touch devices
+            event.preventDefault();
             let target = event.target;
             if (target.classList.contains('active')) {
                 target.classList.remove('active');
                 target.classList.add('clicked');
                 bubblesLeft--;
                 if (bubblesLeft === 0) {
-                    clearTimeout(timer);
+                    clearInterval(timer);
                     nextLevel();
                 }
+            } else {
+                target.classList.add('clicked');
+                alert('You failed the level! You clicked the wrong bubble.');
+                resetGame();
             }
         }
 
+        // Start Timer
         function startTimer() {
             timeLeft = 10;
-            timerDisplay.textContent = timeLeft;
+            timerDisplay.textContent = 'Timer: ' + timeLeft;
             timer = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = timeLeft;
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerDisplay.textContent = 'Timer: ' + timeLeft;
+                }
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     alert('Game Over! You ran out of time.');
+                    resetGame();
                 }
             }, 1000);
         }
 
+        // Next Level
         function nextLevel() {
             if (level < 10) {
                 level++;
-                levelDisplay.textContent = 'Level ' + level;
+                levelDisplay.textContent = 'Level: ' + level;
                 setTimeout(createBubbles, 1000);
             } else {
                 alert('Congratulations! You finished all levels!');
+                resetGame();
             }
         }
 
-        createBubbles();
+        // Reset Game
+        function resetGame() {
+            setTimeout(() => {
+                level = 1;
+                levelDisplay.textContent = 'Level: ' + level;
+                gameContainer.innerHTML = '';
+                startBtn.style.display = 'inline';
+                resetBtn.style.display = 'none';
+            }, 1000);
+        }
     </script>
+
 </body>
 
 </html>
