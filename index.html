@@ -40,6 +40,7 @@
             margin: 20px auto;
             padding: 20px;
             touch-action: none;
+            box-sizing: border-box;
         }
 
         .bubble {
@@ -49,8 +50,9 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
-            transition: background 0.3s;
+            transition: background 0.3s, box-shadow 0.3s;
             position: absolute;
+            /* Position the bubble absolutely within the container */
         }
 
         .bubble.active {
@@ -59,6 +61,7 @@
 
         .bubble.clicked {
             background: white;
+            box-shadow: none;
         }
 
         #user-name {
@@ -96,15 +99,16 @@
         #timer,
         #level-display {
             font-size: 18px;
-            background-color: #f0f0f0;
+            background-color: #f0f0f0; /* Light grey background */
+            color: #333; /* Dark text for contrast */
             padding: 5px 15px;
             border-radius: 5px;
         }
 
         #timer.clicked,
         #level-display.clicked {
-            background-color: #d3f9d8;
-            color: #3e8e41;
+            background-color: #d3f9d8; /* Light green background when clicked */
+            color: #3e8e41; /* Dark green text for contrast */
         }
 
         /* Reset Button Styles */
@@ -113,32 +117,13 @@
             padding: 10px 20px;
         }
 
-        /* Loading message styles */
+        /* Loading Style */
         #loading {
             display: none;
             font-size: 24px;
+            color: #333;
             text-align: center;
-            margin-top: 20px;
-        }
-
-        /* Start Button Styles */
-        #start-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        #start-btn:hover {
-            background-color: #45a049;
-        }
-
-        /* Hide the blue selection box */
-        .bubble:focus {
-            outline: none;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -160,10 +145,9 @@
         <button id="submit-name">Submit</button>
     </div>
 
-    <div id="game-container"></div>
-
-    <!-- Loading Message -->
     <div id="loading">Loading...</div>
+
+    <div id="game-container"></div>
 
     <script>
         const gameContainer = document.getElementById('game-container');
@@ -174,7 +158,7 @@
         const submitNameBtn = document.getElementById('submit-name');
         const userNameInput = document.getElementById('user-name-input');
         const userNameDisplay = document.getElementById('user-name');
-        const loadingDisplay = document.getElementById('loading');
+        const loading = document.getElementById('loading');
         let level = 1;
         let bubbles = [];
         let activeBubbles = [];
@@ -183,17 +167,11 @@
         let timeLeft;
         let userName = ''; // Store the user's name
 
-        // Sound effects
-        let clickSound, failSound, successSound;
-
-        // Load Sounds
-        function loadSounds() {
-            clickSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
-            failSound = new Audio('https://www.soundjay.com/button/beep-09.wav');
-            successSound = new Audio('https://www.soundjay.com/button/coin-01.wav');
-        }
-
-        loadSounds();
+        // Sounds
+        const clickSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
+        const successSound = new Audio('https://www.soundjay.com/button/success.wav');
+        const failureSound = new Audio('https://www.soundjay.com/button/fail.wav');
+        const fireworksSound = new Audio('https://www.soundjay.com/button/fireworks.wav');
 
         submitNameBtn.addEventListener('click', handleNameSubmit);
         startBtn.addEventListener('click', startGame);
@@ -225,18 +203,16 @@
 
         // Create Bubbles and Start Timer
         function createBubbles() {
+            // Clear previous bubbles
             gameContainer.innerHTML = ''; // Removes any existing bubbles
 
             bubbles = [];
             activeBubbles = [];
             bubblesLeft = 0; // Reset the number of bubbles left to pop
 
-            // Create random number of bubbles between 3-4 for the first 10 levels, 5-6 for the next 10, and so on
-            let numBubbles = (level <= 10) ? (Math.floor(Math.random() * 2) + 3) :
-                (level <= 20) ? (Math.floor(Math.random() * 2) + 5) :
-                    (Math.floor(Math.random() * 2) + 5);
-
-            for (let i = 0; i < numBubbles; i++) {
+            // Create bubbles based on the level
+            const bubbleCount = (level <= 10) ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 2) + 5;
+            for (let i = 0; i < 10; i++) {
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
                 bubble.addEventListener('click', popBubble);
@@ -245,20 +221,20 @@
                 bubbles.push(bubble);
             }
 
-            activateRandomBubbles();
+            activateRandomBubbles(bubbleCount);
             startTimer();
         }
 
         // Activate Random Bubbles
-        function activateRandomBubbles() {
+        function activateRandomBubbles(bubbleCount) {
             let selectedIndices = [];
-            while (selectedIndices.length < 3) { // Set number of active bubbles to 3
+            while (selectedIndices.length < bubbleCount) { // Set number of active bubbles
                 let randomIndex = Math.floor(Math.random() * bubbles.length);
                 if (!selectedIndices.includes(randomIndex)) {
                     selectedIndices.push(randomIndex);
                     bubbles[randomIndex].classList.add('active');
                     activeBubbles.push(bubbles[randomIndex]);
-                    bubblesLeft++;
+                    bubblesLeft++; // Increase the number of bubbles left to pop
                     randomizeBubblePosition(bubbles[randomIndex]);
                 }
             }
@@ -266,8 +242,8 @@
 
         // Randomize Bubble Position inside the Box
         function randomizeBubblePosition(bubble) {
-            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth - 10; // Adding padding/margin to avoid touching border
-            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight - 10;
+            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth - 10; // Ensure bubbles are within the container width (with padding)
+            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight - 10; // Ensure bubbles are within the container height (with padding)
 
             let randomX = Math.floor(Math.random() * maxWidth);
             let randomY = Math.floor(Math.random() * maxHeight);
@@ -283,14 +259,18 @@
             if (target.classList.contains('active')) {
                 target.classList.remove('active');
                 target.classList.add('clicked');
+                target.style.background = 'white'; // Change clicked circle color
+                target.style.boxShadow = 'none';
+                clickSound.play();
                 bubblesLeft--;
-                clickSound.play(); // Play click sound
                 if (bubblesLeft === 0) {
                     clearInterval(timer);
                     nextLevel();
                 }
             } else {
-                failSound.play(); // Play failure sound
+                target.classList.add('clicked');
+                failureSound.play();
+                document.body.style.backgroundColor = 'red'; // Red background on failure
                 alert('You failed the level! You clicked the wrong bubble.');
                 resetGame();
             }
@@ -315,18 +295,17 @@
 
         // Next Level
         function nextLevel() {
-            loadingDisplay.style.display = 'block';
-            setTimeout(() => {
-                loadingDisplay.style.display = 'none';
-                if (level < 30) {
-                    level++;
-                    levelDisplay.textContent = 'Level: ' + level;
-                    createBubbles();
-                } else {
-                    alert('Congratulations! You finished all levels!');
-                    resetGame();
-                }
-            }, 1000);
+            if (level < 20) { // Changed to 20 levels
+                level++;
+                levelDisplay.textContent = 'Level: ' + level;
+                showLoading();
+                setTimeout(createBubbles, 1000); // Create new bubbles after the level is incremented
+                successSound.play();
+                fireworksSound.play();
+            } else {
+                alert('Congratulations! You finished all levels!');
+                resetGame();
+            }
         }
 
         // Reset Game
@@ -339,6 +318,14 @@
                 resetBtn.style.display = 'none';
                 timerDisplay.textContent = 'Timer: 10'; // Reset timer display
                 document.body.style.backgroundColor = 'white'; // Reset background color
+            }, 1000);
+        }
+
+        // Show Loading
+        function showLoading() {
+            loading.style.display = 'block';
+            setTimeout(() => {
+                loading.style.display = 'none';
             }, 1000);
         }
     </script>
