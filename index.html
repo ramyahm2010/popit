@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Pop It Game</title>
     <style>
-        /* Random background */
+        /* General Styles */
         body {
-            background: linear-gradient(45deg, #f06, #4a90e2);
-            transition: background 0.5s;
+            text-align: center;
+            transition: background 1s;
         }
 
-        /* Header Bar */
+        /* Header Bar Styles */
         #header-bar {
             width: 90%;
             display: flex;
@@ -23,12 +24,7 @@
             font-weight: bold;
             align-items: center;
             border-radius: 5px;
-            margin: 20px auto;
-        }
-
-        #header-bar div,
-        #header-bar button {
-            margin: 0 10px;
+            margin: 0 auto;
         }
 
         /* Game Container */
@@ -40,23 +36,26 @@
             max-height: 400px;
             background: white;
             border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid black;
+            border: 3px solid black;
             margin: 20px auto;
-            padding: 10px; /* Avoids touching the border */
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            touch-action: none;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Bubbles */
+        /* Bubble Styles */
         .bubble {
             width: 60px;
             height: 60px;
-            background: grey;
+            background: #888;
             border-radius: 50%;
-            cursor: pointer;
             border: 2px solid black;
-            position: absolute;
-            transition: background 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            margin: 10px;
+            cursor: pointer;
+            transition: background 0.5s ease-in-out;
         }
 
         .bubble.active {
@@ -64,51 +63,75 @@
         }
 
         .bubble.clicked {
-            background: rgba(0, 255, 0, 0.2); /* Faded green */
-            opacity: 0.5;
+            background: rgba(0, 255, 0, 0.3);
+            border: 2px solid black;
         }
 
         /* Name Input */
         #name-input-section {
             display: flex;
             justify-content: center;
-            margin-top: 50px;
+            margin-top: 100px;
         }
 
-        #name-input-section input, #name-input-section button {
+        #name-input-section input {
             padding: 10px;
             font-size: 18px;
         }
 
-        /* Button */
+        #name-input-section button {
+            padding: 10px;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+
+        /* Button Styles */
         button {
             padding: 10px;
             font-size: 18px;
             cursor: pointer;
         }
 
-        /* Timer and Level Display */
-        #timer {
-            font-size: 18px;
+        /* Fireworks */
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: yellow;
+            border-radius: 50%;
+            animation: explode 1s ease-out;
         }
 
-        /* Reset Button */
-        #reset-btn {
-            margin-right: 10px;
-            padding: 10px 20px;
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* Failure Message */
+        #failure-message {
             display: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: red;
+            margin-top: 20px;
         }
     </style>
 </head>
-<body>
 
-    <!-- Header -->
+<body>
+    <!-- Header Bar -->
     <div id="header-bar">
         <div id="timer">Timer: 10</div>
         <button id="start-btn">Start Game</button>
         <div id="level-display">Level: 1</div>
         <div id="user-name"></div>
-        <button id="reset-btn">Reset Game</button>
+        <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
 
     <!-- Name Input Section -->
@@ -118,6 +141,10 @@
     </div>
 
     <div id="game-container"></div>
+    <div id="failure-message">You failed! Try again.</div>
+
+    <audio id="success-sound" src="success.mp3"></audio>
+    <audio id="fail-sound" src="fail.mp3"></audio>
 
     <script>
         const gameContainer = document.getElementById('game-container');
@@ -128,8 +155,12 @@
         const submitNameBtn = document.getElementById('submit-name');
         const userNameInput = document.getElementById('user-name-input');
         const userNameDisplay = document.getElementById('user-name');
+        const failureMessage = document.getElementById('failure-message');
+        const successSound = document.getElementById('success-sound');
+        const failSound = document.getElementById('fail-sound');
         let level = 1;
         let bubbles = [];
+        let activeBubbles = [];
         let timer;
         let timeLeft;
         let userName = '';
@@ -163,11 +194,8 @@
         function createBubbles() {
             gameContainer.innerHTML = '';
             bubbles = [];
-
-            let activeCount = level <= 10 ? Math.floor(Math.random() * 2) + 3 :
-                              level <= 20 ? Math.floor(Math.random() * 2) + 5 :
-                              Math.floor(Math.random() * 2) + 7;
-
+            activeBubbles = [];
+            let count = level <= 10 ? 3 + Math.floor(Math.random() * 2) : 5 + Math.floor(Math.random() * 2);
             let positions = [];
 
             for (let i = 0; i < 10; i++) {
@@ -176,84 +204,67 @@
                 bubble.addEventListener('click', popBubble);
                 gameContainer.appendChild(bubble);
                 bubbles.push(bubble);
-
-                let x, y;
-                let overlap;
+                
+                let pos;
                 do {
-                    overlap = false;
-                    x = Math.floor(Math.random() * (gameContainer.clientWidth - 70));
-                    y = Math.floor(Math.random() * (gameContainer.clientHeight - 70));
-
-                    for (let pos of positions) {
-                        if (Math.abs(pos.x - x) < 70 && Math.abs(pos.y - y) < 70) {
-                            overlap = true;
-                            break;
-                        }
-                    }
-                } while (overlap);
-
-                positions.push({ x, y });
-                bubble.style.left = `${x}px`;
-                bubble.style.top = `${y}px`;
+                    pos = `${Math.random() * 80}%, ${Math.random() * 80}%`;
+                } while (positions.includes(pos));
+                
+                positions.push(pos);
+                bubble.style.transform = `translate(${pos})`;
             }
 
-            for (let i = 0; i < activeCount; i++) {
-                bubbles[i].classList.add('active');
+            while (activeBubbles.length < count) {
+                let bubble = bubbles[Math.floor(Math.random() * bubbles.length)];
+                if (!bubble.classList.contains('active')) {
+                    bubble.classList.add('active');
+                    activeBubbles.push(bubble);
+                }
             }
 
             startTimer();
         }
 
         function popBubble(event) {
-            event.preventDefault();
-            let target = event.target;
-            if (target.classList.contains('active')) {
-                target.classList.remove('active');
-                target.classList.add('clicked');
-
-                if (!document.querySelector('.bubble.active')) {
+            if (event.target.classList.contains('active')) {
+                event.target.classList.remove('active');
+                event.target.classList.add('clicked');
+                activeBubbles = activeBubbles.filter(b => b !== event.target);
+                if (activeBubbles.length === 0) {
                     clearInterval(timer);
-                    document.body.style.background = 'green';
-                    setTimeout(nextLevel, 1000);
+                    successSound.play();
+                    setTimeout(() => startGame(), 1000);
                 }
             } else {
                 document.body.style.background = 'red';
-                alert('You clicked the wrong bubble!');
+                failureMessage.style.display = 'block';
+                failSound.play();
                 resetGame();
             }
         }
 
         function startTimer() {
             timeLeft = 10;
-            timerDisplay.textContent = 'Timer: ' + timeLeft;
             timer = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    timerDisplay.textContent = 'Timer: ' + timeLeft;
-                } else {
+                if (--timeLeft <= 0) {
                     clearInterval(timer);
-                    alert('Game Over! Time ran out.');
                     resetGame();
                 }
+                timerDisplay.textContent = `Timer: ${timeLeft}`;
             }, 1000);
-        }
-
-        function nextLevel() {
-            level++;
-            levelDisplay.textContent = 'Level: ' + level;
-            createBubbles();
         }
 
         function resetGame() {
             clearInterval(timer);
-            level = 1;
-            levelDisplay.textContent = 'Level: 1';
+            document.body.style.background = '';
+            failureMessage.style.display = 'none';
             timerDisplay.textContent = 'Timer: 10';
             startBtn.style.display = 'inline';
             resetBtn.style.display = 'none';
-            document.body.style.background = '';
-            gameContainer.innerHTML = '';
+            level = 1;
+            levelDisplay.textContent = 'Level: 1';
         }
     </script>
 </body>
+
 </html>
