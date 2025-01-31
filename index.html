@@ -20,7 +20,7 @@
             100% { background-position: 100% 50%; }
         }
 
-        /* Header Bar */
+        /* Header */
         #header-bar {
             width: 90%;
             display: flex;
@@ -48,11 +48,6 @@
             border: 3px solid black;
             margin: 20px auto;
             padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            position: relative;
         }
 
         /* Bubble Styling */
@@ -63,7 +58,7 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
-            transition: background 0.3s, opacity 1s;
+            transition: background 0.3s;
             position: absolute;
             user-select: none;
         }
@@ -73,13 +68,13 @@
         }
 
         .bubble.clicked {
-            background: white;
-            opacity: 0.7;
+            background: white !important;
         }
 
-        /* Name Input */
-        #name-input-section {
-            margin: 20px;
+        /* Remove Selection Shadow */
+        button, .bubble {
+            outline: none;
+            border: none;
         }
 
         /* Fireworks */
@@ -109,12 +104,6 @@
         <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
 
-    <!-- Name Input -->
-    <div id="name-input-section">
-        <input type="text" id="user-name-input" placeholder="Enter your name" />
-        <button id="submit-name">Submit</button>
-    </div>
-
     <div id="game-container"></div>
 
     <script>
@@ -123,32 +112,19 @@
         const timerDisplay = document.getElementById('timer');
         const startBtn = document.getElementById('start-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const submitNameBtn = document.getElementById('submit-name');
-        const userNameInput = document.getElementById('user-name-input');
-        const userNameDisplay = document.getElementById('user-name');
-        let level = 1, bubblesLeft = 0, timer, timeLeft, userName = '', clickSound, failSound, successSound;
+        let level = 1, bubblesLeft = 0, timer, timeLeft, clickSound, failSound, successSound;
 
-        // Sounds
+        // Load Sounds
         function loadSounds() {
             clickSound = new Audio('click.mp3');
             failSound = new Audio('fail.mp3');
             successSound = new Audio('success.mp3');
         }
 
-        submitNameBtn.addEventListener('click', () => {
-            userName = userNameInput.value.trim();
-            if (userName) {
-                userNameDisplay.textContent = `Hello, ${userName}`;
-                document.getElementById('name-input-section').style.display = 'none';
-                alert(`Welcome, ${userName}!`);
-            } else alert("Please enter your name.");
-        });
-
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
 
         function startGame() {
-            if (!userName) return alert("Please enter your name first.");
             startBtn.style.display = 'none';
             resetBtn.style.display = 'inline';
             createBubbles();
@@ -167,14 +143,18 @@
                 gameContainer.appendChild(bubble);
 
                 let position;
+                let maxAttempts = 100; // Avoid infinite loops
+                let attempts = 0;
                 do {
                     position = {
                         left: getRandomInt(10, gameContainer.clientWidth - 70),
                         top: getRandomInt(10, gameContainer.clientHeight - 70)
                     };
+                    attempts++;
+                    if (attempts > maxAttempts) break;
                 } while (positions.some(p => Math.hypot(p.left - position.left, p.top - position.top) < 70));
-                positions.push(position);
 
+                positions.push(position);
                 bubble.style.left = `${position.left}px`;
                 bubble.style.top = `${position.top}px`;
             }
