@@ -128,11 +128,11 @@
         const userNameDisplay = document.getElementById('user-name');
         let level = 1, bubblesLeft = 0, timer, timeLeft, userName = '', clickSound, failSound, successSound;
 
-        // Sounds
+        // Load Sounds from URLs
         function loadSounds() {
-            clickSound = new Audio('click.mp3');
-            failSound = new Audio('fail.mp3');
-            successSound = new Audio('success.mp3');
+            clickSound = new Audio('https://www.fesliyanstudios.com/play-mp3/4385');
+            failSound = new Audio('https://www.fesliyanstudios.com/play-mp3/4384');
+            successSound = new Audio('https://www.fesliyanstudios.com/play-mp3/4383');
         }
 
         submitNameBtn.addEventListener('click', () => {
