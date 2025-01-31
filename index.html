@@ -9,10 +9,18 @@
         /* General Styles */
         body {
             text-align: center;
-            transition: background 1s;
+            transition: background 0.5s ease;
+            background: linear-gradient(45deg, #ff8c00, #ff0080, #00bfff);
+            background-size: 400% 400%;
+            animation: gradientMove 10s infinite alternate;
         }
 
-        /* Header Bar Styles */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Header Bar */
         #header-bar {
             width: 90%;
             display: flex;
@@ -24,7 +32,7 @@
             font-weight: bold;
             align-items: center;
             border-radius: 5px;
-            margin: 0 auto;
+            margin: 20px auto;
         }
 
         /* Game Container */
@@ -36,26 +44,28 @@
             max-height: 400px;
             background: white;
             border-radius: 10px;
+            overflow: hidden;
             border: 3px solid black;
             margin: 20px auto;
             padding: 10px;
-            touch-action: none;
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
         }
 
-        /* Bubble Styles */
+        /* Bubble Styling */
         .bubble {
             width: 60px;
             height: 60px;
-            background: #888;
+            background: grey;
             border-radius: 50%;
-            border: 2px solid black;
-            margin: 10px;
             cursor: pointer;
-            transition: background 0.5s ease-in-out;
+            border: 2px solid black;
+            transition: background 0.3s, opacity 1s;
+            position: absolute;
+            user-select: none;
         }
 
         .bubble.active {
@@ -63,69 +73,34 @@
         }
 
         .bubble.clicked {
-            background: rgba(0, 255, 0, 0.3);
-            border: 2px solid black;
+            background: white;
+            opacity: 0.7;
         }
 
         /* Name Input */
         #name-input-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 100px;
-        }
-
-        #name-input-section input {
-            padding: 10px;
-            font-size: 18px;
-        }
-
-        #name-input-section button {
-            padding: 10px;
-            font-size: 18px;
-            margin-left: 10px;
-        }
-
-        /* Button Styles */
-        button {
-            padding: 10px;
-            font-size: 18px;
-            cursor: pointer;
+            margin: 20px;
         }
 
         /* Fireworks */
         .firework {
+            width: 5px;
+            height: 5px;
+            background: gold;
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background: yellow;
-            border-radius: 50%;
-            animation: explode 1s ease-out;
+            animation: explode 1s linear infinite;
         }
 
         @keyframes explode {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(3);
-                opacity: 0;
-            }
-        }
-
-        /* Failure Message */
-        #failure-message {
-            display: none;
-            font-size: 20px;
-            font-weight: bold;
-            color: red;
-            margin-top: 20px;
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(5); opacity: 0; }
         }
     </style>
 </head>
 
 <body>
-    <!-- Header Bar -->
+
+    <!-- Header -->
     <div id="header-bar">
         <div id="timer">Timer: 10</div>
         <button id="start-btn">Start Game</button>
@@ -134,17 +109,13 @@
         <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
 
-    <!-- Name Input Section -->
+    <!-- Name Input -->
     <div id="name-input-section">
         <input type="text" id="user-name-input" placeholder="Enter your name" />
         <button id="submit-name">Submit</button>
     </div>
 
     <div id="game-container"></div>
-    <div id="failure-message">You failed! Try again.</div>
-
-    <audio id="success-sound" src="success.mp3"></audio>
-    <audio id="fail-sound" src="fail.mp3"></audio>
 
     <script>
         const gameContainer = document.getElementById('game-container');
@@ -155,37 +126,29 @@
         const submitNameBtn = document.getElementById('submit-name');
         const userNameInput = document.getElementById('user-name-input');
         const userNameDisplay = document.getElementById('user-name');
-        const failureMessage = document.getElementById('failure-message');
-        const successSound = document.getElementById('success-sound');
-        const failSound = document.getElementById('fail-sound');
-        let level = 1;
-        let bubbles = [];
-        let activeBubbles = [];
-        let timer;
-        let timeLeft;
-        let userName = '';
+        let level = 1, bubblesLeft = 0, timer, timeLeft, userName = '', clickSound, failSound, successSound;
 
-        submitNameBtn.addEventListener('click', handleNameSubmit);
-        startBtn.addEventListener('click', startGame);
-        resetBtn.addEventListener('click', resetGame);
+        // Sounds
+        function loadSounds() {
+            clickSound = new Audio('click.mp3');
+            failSound = new Audio('fail.mp3');
+            successSound = new Audio('success.mp3');
+        }
 
-        function handleNameSubmit() {
-            const name = userNameInput.value.trim();
-            if (name) {
-                userName = name;
+        submitNameBtn.addEventListener('click', () => {
+            userName = userNameInput.value.trim();
+            if (userName) {
                 userNameDisplay.textContent = `Hello, ${userName}`;
                 document.getElementById('name-input-section').style.display = 'none';
                 alert(`Welcome, ${userName}!`);
-            } else {
-                alert("Please enter your name.");
-            }
-        }
+            } else alert("Please enter your name.");
+        });
+
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
 
         function startGame() {
-            if (!userName) {
-                alert("Please enter your name first.");
-                return;
-            }
+            if (!userName) return alert("Please enter your name first.");
             startBtn.style.display = 'none';
             resetBtn.style.display = 'inline';
             createBubbles();
@@ -193,78 +156,105 @@
 
         function createBubbles() {
             gameContainer.innerHTML = '';
-            bubbles = [];
-            activeBubbles = [];
-            let count = level <= 10 ? 3 + Math.floor(Math.random() * 2) : 5 + Math.floor(Math.random() * 2);
+            let bubbleCount = level <= 10 ? 10 : 15;
+            let activeCount = level <= 10 ? getRandomInt(3, 4) : getRandomInt(5, 6);
             let positions = [];
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < bubbleCount; i++) {
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
                 bubble.addEventListener('click', popBubble);
                 gameContainer.appendChild(bubble);
-                bubbles.push(bubble);
-                
-                let pos;
+
+                let position;
                 do {
-                    pos = `${Math.random() * 80}%, ${Math.random() * 80}%`;
-                } while (positions.includes(pos));
-                
-                positions.push(pos);
-                bubble.style.transform = `translate(${pos})`;
+                    position = {
+                        left: getRandomInt(10, gameContainer.clientWidth - 70),
+                        top: getRandomInt(10, gameContainer.clientHeight - 70)
+                    };
+                } while (positions.some(p => Math.hypot(p.left - position.left, p.top - position.top) < 70));
+                positions.push(position);
+
+                bubble.style.left = `${position.left}px`;
+                bubble.style.top = `${position.top}px`;
             }
 
-            while (activeBubbles.length < count) {
-                let bubble = bubbles[Math.floor(Math.random() * bubbles.length)];
-                if (!bubble.classList.contains('active')) {
-                    bubble.classList.add('active');
-                    activeBubbles.push(bubble);
-                }
-            }
-
+            let activeBubbles = Array.from(gameContainer.children);
+            for (let i = 0; i < activeCount; i++) activeBubbles[i].classList.add('active');
+            bubblesLeft = activeCount;
             startTimer();
         }
 
         function popBubble(event) {
-            if (event.target.classList.contains('active')) {
-                event.target.classList.remove('active');
-                event.target.classList.add('clicked');
-                activeBubbles = activeBubbles.filter(b => b !== event.target);
-                if (activeBubbles.length === 0) {
+            event.preventDefault();
+            clickSound.play();
+            let target = event.target;
+            if (target.classList.contains('active')) {
+                target.classList.remove('active');
+                target.classList.add('clicked');
+                bubblesLeft--;
+                if (bubblesLeft === 0) {
                     clearInterval(timer);
-                    successSound.play();
-                    setTimeout(() => startGame(), 1000);
+                    setTimeout(nextLevel, 1000);
                 }
             } else {
                 document.body.style.background = 'red';
-                failureMessage.style.display = 'block';
                 failSound.play();
-                resetGame();
+                setTimeout(resetGame, 1000);
             }
         }
 
         function startTimer() {
             timeLeft = 10;
+            timerDisplay.textContent = 'Timer: ' + timeLeft;
             timer = setInterval(() => {
-                if (--timeLeft <= 0) {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerDisplay.textContent = 'Timer: ' + timeLeft;
+                } else {
                     clearInterval(timer);
+                    alert('Game Over! Time ran out.');
                     resetGame();
                 }
-                timerDisplay.textContent = `Timer: ${timeLeft}`;
             }, 1000);
+        }
+
+        function nextLevel() {
+            successSound.play();
+            document.body.style.background = 'green';
+            fireworkAnimation();
+            if (level < 50) {
+                level++;
+                levelDisplay.textContent = 'Level: ' + level;
+                setTimeout(createBubbles, 1000);
+            } else {
+                alert('Congratulations! You finished all levels!');
+                resetGame();
+            }
         }
 
         function resetGame() {
             clearInterval(timer);
-            document.body.style.background = '';
-            failureMessage.style.display = 'none';
+            level = 1;
+            levelDisplay.textContent = 'Level: ' + level;
             timerDisplay.textContent = 'Timer: 10';
             startBtn.style.display = 'inline';
             resetBtn.style.display = 'none';
-            level = 1;
-            levelDisplay.textContent = 'Level: 1';
+            gameContainer.innerHTML = '';
+            document.body.style.background = '';
         }
-    </script>
-</body>
 
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function fireworkAnimation() {
+            let firework = document.createElement('div');
+            firework.classList.add('firework');
+            document.body.appendChild(firework);
+            setTimeout(() => firework.remove(), 1000);
+        }
+
+        loadSounds();
+    </script>
+
+</body>
 </html>
