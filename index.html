@@ -9,7 +9,8 @@
         /* Header Bar Styles */
         
         #header-bar {
-            width: 100%;
+            width: 90%;
+            /* Reduced width from 100% to 90% */
             display: flex;
             justify-content: space-between;
             padding: 10px 30px;
@@ -19,8 +20,8 @@
             font-weight: bold;
             align-items: center;
             border-radius: 5px;
-            margin-right: 30px;
-            /* Added margin on the right */
+            margin: 0 auto;
+            /* Center the header bar */
         }
         
         #header-bar div,
@@ -31,28 +32,33 @@
         
         #game-container {
             position: relative;
-            width: 400px;
-            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            /* 5x2 grid for 10 circles */
+            grid-gap: 10px;
+            /* Space between circles */
+            width: 80vw;
+            /* Adjusts width to fit the mobile screen */
+            height: 50vh;
+            /* Adjusts height to fit the mobile screen */
+            max-width: 400px;
+            /* Maximum width for large screens */
+            max-height: 400px;
+            /* Maximum height for large screens */
             background: white;
-            border-radius: 50%;
+            border-radius: 10px;
             overflow: hidden;
             border: 2px solid black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-            /* Centers the circle horizontally */
+            margin: 20px auto;
+            /* Adds margin on top and bottom, centers horizontally */
             padding: 20px;
-            /* Adds space inside the circle */
-            margin-top: 50px;
-            /* Adds space from the top */
+            /* Adds padding inside the game container */
             touch-action: none;
         }
         
         .bubble {
-            position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background: #333;
             border-radius: 50%;
             cursor: pointer;
@@ -103,6 +109,14 @@
         
         #timer {
             font-size: 18px;
+        }
+        /* Reset Button Styles */
+        
+        #reset-btn {
+            margin-right: 10px;
+            /* Added margin right for spacing */
+            padding: 10px 20px;
+            /* Adjusted padding */
         }
     </style>
 </head>
@@ -174,24 +188,23 @@
 
         // Create Bubbles and Start Timer
         function createBubbles() {
+            // Clear previous bubbles
+            gameContainer.innerHTML = ''; // Removes any existing bubbles
+
             bubbles = [];
             activeBubbles = [];
-            bubblesLeft = Math.floor(Math.random() * 2) + 3;
-            const radius = 150;
+            bubblesLeft = 0; // Reset the number of bubbles left to pop
 
+            // Create exactly 10 bubbles (grid of 5x2)
             for (let i = 0; i < 10; i++) {
-                let angle = (i / 10) * Math.PI * 2;
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
-                let x = Math.cos(angle) * radius + 175;
-                let y = Math.sin(angle) * radius + 175;
-                bubble.style.left = x + 'px';
-                bubble.style.top = y + 'px';
                 bubble.addEventListener('click', popBubble);
                 bubble.addEventListener('touchstart', popBubble);
                 gameContainer.appendChild(bubble);
                 bubbles.push(bubble);
             }
+
             activateRandomBubbles();
             startTimer();
         }
@@ -199,12 +212,13 @@
         // Activate Random Bubbles
         function activateRandomBubbles() {
             let selectedIndices = [];
-            while (selectedIndices.length < bubblesLeft) {
+            while (selectedIndices.length < 3) { // Set number of active bubbles to 3
                 let randomIndex = Math.floor(Math.random() * bubbles.length);
                 if (!selectedIndices.includes(randomIndex)) {
                     selectedIndices.push(randomIndex);
                     bubbles[randomIndex].classList.add('active');
                     activeBubbles.push(bubbles[randomIndex]);
+                    bubblesLeft++; // Increase the number of bubbles left to pop
                 }
             }
         }
@@ -247,10 +261,10 @@
 
         // Next Level
         function nextLevel() {
-            if (level < 10) {
+            if (level < 20) { // Changed to 20 levels
                 level++;
                 levelDisplay.textContent = 'Level: ' + level;
-                setTimeout(createBubbles, 1000);
+                setTimeout(createBubbles, 1000); // Create new bubbles after the level is incremented
             } else {
                 alert('Congratulations! You finished all levels!');
                 resetGame();
@@ -262,7 +276,7 @@
             setTimeout(() => {
                 level = 1;
                 levelDisplay.textContent = 'Level: ' + level;
-                gameContainer.innerHTML = '';
+                gameContainer.innerHTML = ''; // Clear all the bubbles
                 startBtn.style.display = 'inline';
                 resetBtn.style.display = 'none';
             }, 1000);
