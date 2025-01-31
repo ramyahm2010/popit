@@ -7,7 +7,6 @@
     <title>Speed Pop It Game</title>
     <style>
         /* Header Bar Styles */
-        
         #header-bar {
             width: 90%;
             display: flex;
@@ -26,8 +25,8 @@
         #header-bar button {
             margin: 0 10px;
         }
-        /* Centering the game container and adding margin and padding */
         
+        /* Centering the game container */
         #game-container {
             position: relative;
             width: 80vw;
@@ -43,6 +42,7 @@
             touch-action: none;
         }
         
+        /* Bubble Styles */
         .bubble {
             width: 60px;
             height: 60px;
@@ -50,9 +50,8 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
-            transition: background 0.3s;
+            transition: background 0.3s, opacity 0.5s ease-out;
             position: absolute;
-            /* Position the bubble absolutely within the container */
         }
         
         .bubble.active {
@@ -61,15 +60,10 @@
         
         .bubble.clicked {
             background: green;
+            opacity: 0; /* Fades out smoothly */
         }
         
-        #user-name {
-            font-size: 16px;
-            font-weight: normal;
-            margin-left: 20px;
-        }
-        /* Name input field */
-        
+        /* Name Input Field */
         #name-input-section {
             display: flex;
             justify-content: center;
@@ -86,20 +80,20 @@
             font-size: 18px;
             margin-left: 10px;
         }
-        /* Button Styles */
         
+        /* Button Styles */
         button {
             padding: 10px;
             font-size: 18px;
             cursor: pointer;
         }
-        /* Timer and Level Display */
         
+        /* Timer and Level Display */
         #timer {
             font-size: 18px;
         }
-        /* Reset Button Styles */
         
+        /* Reset Button Styles */
         #reset-btn {
             margin-right: 10px;
             padding: 10px 20px;
@@ -115,7 +109,6 @@
         <button id="start-btn">Start Game</button>
         <div id="level-display">Level: 1</div>
         <div id="user-name"></div>
-        <!-- User's name will be displayed here -->
         <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
 
@@ -136,32 +129,31 @@
         const submitNameBtn = document.getElementById('submit-name');
         const userNameInput = document.getElementById('user-name-input');
         const userNameDisplay = document.getElementById('user-name');
+
         let level = 1;
         let bubbles = [];
         let activeBubbles = [];
         let bubblesLeft = 0;
         let timer;
         let timeLeft;
-        let userName = ''; // Store the user's name
+        let userName = '';
 
         submitNameBtn.addEventListener('click', handleNameSubmit);
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
 
-        // Handle Name Submit
         function handleNameSubmit() {
             const name = userNameInput.value.trim();
             if (name) {
                 userName = name;
-                userNameDisplay.textContent = `Hello, ${userName}`; // Display user name in header
-                document.getElementById('name-input-section').style.display = 'none'; // Hide name input
+                userNameDisplay.textContent = `Hello, ${userName}`;
+                document.getElementById('name-input-section').style.display = 'none';
                 alert(`Welcome, ${userName}!`);
             } else {
                 alert("Please enter your name.");
             }
         }
 
-        // Start Game Function
         function startGame() {
             if (!userName) {
                 alert("Please enter your name first.");
@@ -172,16 +164,12 @@
             createBubbles();
         }
 
-        // Create Bubbles and Start Timer
         function createBubbles() {
-            // Clear previous bubbles
-            gameContainer.innerHTML = ''; // Removes any existing bubbles
-
+            gameContainer.innerHTML = '';
             bubbles = [];
             activeBubbles = [];
-            bubblesLeft = 0; // Reset the number of bubbles left to pop
+            bubblesLeft = 0;
 
-            // Create exactly 10 bubbles
             for (let i = 0; i < 10; i++) {
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
@@ -195,34 +183,45 @@
             startTimer();
         }
 
-        // Activate Random Bubbles
         function activateRandomBubbles() {
             let selectedIndices = [];
-            while (selectedIndices.length < 3) { // Set number of active bubbles to 3
+            while (selectedIndices.length < 3) {
                 let randomIndex = Math.floor(Math.random() * bubbles.length);
                 if (!selectedIndices.includes(randomIndex)) {
                     selectedIndices.push(randomIndex);
-                    bubbles[randomIndex].classList.add('active');
-                    activeBubbles.push(bubbles[randomIndex]);
-                    bubblesLeft++; // Increase the number of bubbles left to pop
-                    randomizeBubblePosition(bubbles[randomIndex]);
+                    let bubble = bubbles[randomIndex];
+                    bubble.classList.add('active');
+                    activeBubbles.push(bubble);
+                    bubblesLeft++;
+                    placeBubbleWithoutOverlap(bubble);
                 }
             }
         }
 
-        // Randomize Bubble Position inside the Box
-        function randomizeBubblePosition(bubble) {
-            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth; // Ensure bubbles are within the container width
-            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight; // Ensure bubbles are within the container height
+        function placeBubbleWithoutOverlap(bubble) {
+            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth;
+            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight;
+            let attempts = 0;
+            let overlap;
 
-            let randomX = Math.floor(Math.random() * maxWidth);
-            let randomY = Math.floor(Math.random() * maxHeight);
+            do {
+                let randomX = Math.floor(Math.random() * maxWidth);
+                let randomY = Math.floor(Math.random() * maxHeight);
 
-            bubble.style.left = `${randomX}px`;
-            bubble.style.top = `${randomY}px`;
+                bubble.style.left = `${randomX}px`;
+                bubble.style.top = `${randomY}px`;
+
+                overlap = bubbles.some(existingBubble => {
+                    if (existingBubble === bubble) return false;
+                    let dx = parseInt(existingBubble.style.left) - randomX;
+                    let dy = parseInt(existingBubble.style.top) - randomY;
+                    return Math.sqrt(dx * dx + dy * dy) < 70; // Ensuring a minimum distance
+                });
+
+                attempts++;
+            } while (overlap && attempts < 20);
         }
 
-        // Pop Bubble (correct or wrong click)
         function popBubble(event) {
             event.preventDefault();
             let target = event.target;
@@ -241,7 +240,6 @@
             }
         }
 
-        // Start Timer
         function startTimer() {
             timeLeft = 10;
             timerDisplay.textContent = 'Timer: ' + timeLeft;
@@ -258,31 +256,21 @@
             }, 1000);
         }
 
-        // Next Level
         function nextLevel() {
-            if (level < 20) { // Changed to 20 levels
-                level++;
-                levelDisplay.textContent = 'Level: ' + level;
-                setTimeout(createBubbles, 1000); // Create new bubbles after the level is incremented
-            } else {
-                alert('Congratulations! You finished all levels!');
-                resetGame();
-            }
+            level++;
+            levelDisplay.textContent = 'Level: ' + level;
+            setTimeout(createBubbles, 1000);
         }
 
-        // Reset Game
         function resetGame() {
-            setTimeout(() => {
-                level = 1;
-                levelDisplay.textContent = 'Level: ' + level;
-                gameContainer.innerHTML = ''; // Clear all the bubbles
-                startBtn.style.display = 'inline';
-                resetBtn.style.display = 'none';
-                timerDisplay.textContent = 'Timer: 10'; // Reset timer display
-            }, 1000);
+            level = 1;
+            levelDisplay.textContent = 'Level: ' + level;
+            gameContainer.innerHTML = '';
+            startBtn.style.display = 'inline';
+            resetBtn.style.display = 'none';
+            timerDisplay.textContent = 'Timer: 10';
         }
     </script>
 
 </body>
-
 </html>
