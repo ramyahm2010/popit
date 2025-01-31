@@ -46,7 +46,7 @@
         .bubble {
             width: 60px;
             height: 60px;
-            background: #333;
+            background: #777;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
@@ -225,6 +225,13 @@
                     randomizeBubblePosition(bubbles[randomIndex]);
                 }
             }
+
+            // Set the remaining bubbles to gray
+            bubbles.forEach(bubble => {
+                if (!bubble.classList.contains('active')) {
+                    bubble.style.background = '#777'; // Non-active bubbles are gray
+                }
+            });
         }
 
         // Randomize Bubble Position inside the Box
