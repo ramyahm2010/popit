@@ -10,7 +10,6 @@
         
         #header-bar {
             width: 90%;
-            /* Reduced width from 100% to 90% */
             display: flex;
             justify-content: space-between;
             padding: 10px 30px;
@@ -21,7 +20,6 @@
             align-items: center;
             border-radius: 5px;
             margin: 0 auto;
-            /* Center the header bar */
         }
         
         #header-bar div,
@@ -32,27 +30,16 @@
         
         #game-container {
             position: relative;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            /* 5x2 grid for 10 circles */
-            grid-gap: 10px;
-            /* Space between circles */
             width: 80vw;
-            /* Adjusts width to fit the mobile screen */
             height: 50vh;
-            /* Adjusts height to fit the mobile screen */
             max-width: 400px;
-            /* Maximum width for large screens */
             max-height: 400px;
-            /* Maximum height for large screens */
             background: white;
             border-radius: 10px;
             overflow: hidden;
             border: 2px solid black;
             margin: 20px auto;
-            /* Adds margin on top and bottom, centers horizontally */
             padding: 20px;
-            /* Adds padding inside the game container */
             touch-action: none;
         }
         
@@ -64,6 +51,8 @@
             cursor: pointer;
             border: 2px solid black;
             transition: background 0.3s;
+            position: absolute;
+            /* Position the bubble absolutely within the container */
         }
         
         .bubble.active {
@@ -78,7 +67,6 @@
             font-size: 16px;
             font-weight: normal;
             margin-left: 20px;
-            /* Added margin left to push it right */
         }
         /* Name input field */
         
@@ -114,9 +102,7 @@
         
         #reset-btn {
             margin-right: 10px;
-            /* Added margin right for spacing */
             padding: 10px 20px;
-            /* Adjusted padding */
         }
     </style>
 </head>
@@ -128,7 +114,7 @@
         <div id="timer">Timer: 10</div>
         <button id="start-btn">Start Game</button>
         <div id="level-display">Level: 1</div>
-        <div id="user-name"> </div>
+        <div id="user-name"></div>
         <!-- User's name will be displayed here -->
         <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
@@ -195,7 +181,7 @@
             activeBubbles = [];
             bubblesLeft = 0; // Reset the number of bubbles left to pop
 
-            // Create exactly 10 bubbles (grid of 5x2)
+            // Create exactly 10 bubbles
             for (let i = 0; i < 10; i++) {
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
@@ -219,8 +205,21 @@
                     bubbles[randomIndex].classList.add('active');
                     activeBubbles.push(bubbles[randomIndex]);
                     bubblesLeft++; // Increase the number of bubbles left to pop
+                    randomizeBubblePosition(bubbles[randomIndex]);
                 }
             }
+        }
+
+        // Randomize Bubble Position inside the Box
+        function randomizeBubblePosition(bubble) {
+            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth; // Ensure bubbles are within the container width
+            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight; // Ensure bubbles are within the container height
+
+            let randomX = Math.floor(Math.random() * maxWidth);
+            let randomY = Math.floor(Math.random() * maxHeight);
+
+            bubble.style.left = `${randomX}px`;
+            bubble.style.top = `${randomY}px`;
         }
 
         // Pop Bubble (correct or wrong click)
@@ -279,6 +278,7 @@
                 gameContainer.innerHTML = ''; // Clear all the bubbles
                 startBtn.style.display = 'inline';
                 resetBtn.style.display = 'none';
+                timerDisplay.textContent = 'Timer: 10'; // Reset timer display
             }, 1000);
         }
     </script>
