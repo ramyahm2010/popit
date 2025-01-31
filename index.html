@@ -52,7 +52,6 @@
             border: 2px solid black;
             transition: background 0.3s, box-shadow 0.3s;
             position: absolute;
-            /* Position the bubble absolutely within the container */
         }
 
         .bubble.active {
@@ -236,8 +235,8 @@
 
         // Randomize Bubble Position inside the Box
         function randomizeBubblePosition(bubble) {
-            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth - 10; // Ensure bubbles are within the container width (with padding)
-            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight - 10; // Ensure bubbles are within the container height (with padding)
+            let maxWidth = gameContainer.offsetWidth - bubble.offsetWidth - 20; // Ensure bubbles are within the container width (with padding)
+            let maxHeight = gameContainer.offsetHeight - bubble.offsetHeight - 20; // Ensure bubbles are within the container height (with padding)
 
             let randomX = Math.floor(Math.random() * maxWidth);
             let randomY = Math.floor(Math.random() * maxHeight);
