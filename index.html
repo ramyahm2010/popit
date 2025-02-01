@@ -237,24 +237,144 @@
             clearInterval(timer);
             level = 1;
             levelDisplay.textContent = 'Level: ' + level;
-            timerDisplay.textContent = 'Timer: 10';
-            startBtn.style.display = 'inline';
-            resetBtn.style.display = 'none';
-            gameContainer.innerHTML = '';
-            document.body.style.background = '';
+
+<script>
+    const gameContainer = document.getElementById('game-container');
+    const levelDisplay = document.getElementById('level-display');
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const submitNameBtn = document.getElementById('submit-name');
+    const userNameInput = document.getElementById('user-name-input');
+    const userNameDisplay = document.getElementById('user-name');
+    let level = 1, bubblesLeft = 0, timer, timeLeft, userName = '', tickSound, failSound, successSound;
+
+    // Load Sounds
+    function loadSounds() {
+        tickSound = new Audio('https://www.soundjay.com/button/beep-07.wav'); // 1-second tick sound
+        failSound = new Audio('https://www.fesliyanstudios.com/play-mp3/438'); // Short fail beep
+        successSound = new Audio('https://www.fesliyanstudios.com/play-mp3/6265'); // Short success chime
+    }
+
+    submitNameBtn.addEventListener('click', () => {
+        userName = userNameInput.value.trim();
+        if (userName) {
+            userNameDisplay.textContent = `Hello, ${userName}`;
+            document.getElementById('name-input-section').style.display = 'none';
+            alert(`Welcome, ${userName}!`);
+        } else alert("Please enter your name.");
+    });
+
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+
+    function startGame() {
+        if (!userName) return alert("Please enter your name first.");
+        startBtn.style.display = 'none';
+        resetBtn.style.display = 'inline';
+        createBubbles();
+    }
+
+    function createBubbles() {
+        gameContainer.innerHTML = '';
+        let bubbleCount = level <= 10 ? 10 : 15;
+        let activeCount = level <= 10 ? getRandomInt(3, 4) : getRandomInt(5, 6);
+        let positions = [];
+
+        for (let i = 0; i < bubbleCount; i++) {
+            let bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.addEventListener('click', popBubble);
+            gameContainer.appendChild(bubble);
+
+            let position;
+            do {
+                position = {
+                    left: getRandomInt(10, gameContainer.clientWidth - 70),
+                    top: getRandomInt(10, gameContainer.clientHeight - 70)
+                };
+            } while (positions.some(p => Math.hypot(p.left - position.left, p.top - position.top) < 70));
+            positions.push(position);
+
+            bubble.style.left = `${position.left}px`;
+            bubble.style.top = `${position.top}px`;
         }
 
-        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        let activeBubbles = Array.from(gameContainer.children);
+        for (let i = 0; i < activeCount; i++) activeBubbles[i].classList.add('active');
+        bubblesLeft = activeCount;
+        startTimer();
+    }
 
-        function fireworkAnimation() {
-            let firework = document.createElement('div');
-            firework.classList.add('firework');
-            document.body.appendChild(firework);
-            setTimeout(() => firework.remove(), 1000);
+    function popBubble(event) {
+        event.preventDefault();
+        tickSound.play();
+        let target = event.target;
+        if (target.classList.contains('active')) {
+            target.classList.remove('active');
+            target.classList.add('clicked');
+            bubblesLeft--;
+            if (bubblesLeft === 0) {
+                clearInterval(timer);
+                setTimeout(nextLevel, 1000);
+            }
+        } else {
+            document.body.style.background = 'red';
+            failSound.play();
+            setTimeout(resetGame, 1000);
         }
+    }
 
-        loadSounds();
-    </script>
+    function startTimer() {
+        timeLeft = 10;
+        timerDisplay.textContent = 'Timer: ' + timeLeft;
+        timer = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                timerDisplay.textContent = 'Timer: ' + timeLeft;
+            } else {
+                clearInterval(timer);
+                alert('Game Over! Time ran out.');
+                resetGame();
+            }
+        }, 1000);
+    }
 
+    function nextLevel() {
+        successSound.play();
+        document.body.style.background = 'green';
+        fireworkAnimation();
+        if (level < 50) {
+            level++;
+            levelDisplay.textContent = 'Level: ' + level;
+            setTimeout(createBubbles, 1000);
+        } else {
+            alert('Congratulations! You finished all levels!');
+            resetGame();
+        }
+    }
+
+    function resetGame() {
+        clearInterval(timer);
+        level = 1;
+        levelDisplay.textContent = 'Level: ' + level;
+        timerDisplay.textContent = 'Timer: 10';
+        startBtn.style.display = 'inline';
+        resetBtn.style.display = 'none';
+        gameContainer.innerHTML = '';
+        document.body.style.background = '';
+    }
+
+    function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function fireworkAnimation() {
+        let firework = document.createElement('div');
+        firework.classList.add('firework');
+        document.body.appendChild(firework);
+        setTimeout(() => firework.remove(), 1000);
+    }
+
+    loadSounds();
+</script>
 </body>
 </html>
