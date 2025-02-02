@@ -19,20 +19,54 @@
             100% { background-position: 100% 50%; }
         }
 
+        /* Header Bar */
+        #header-bar {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            margin: 20px auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Buttons */
+        button {
+            cursor: pointer;
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            background-color: white;
+            color: black;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: lightgray;
+        }
+
         /* Game Container */
         #game-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 80vw;
+            height: 50vh;
+            max-width: 400px;
+            max-height: 400px;
             background: white;
             border-radius: 10px;
             border: 3px solid black;
             margin: 20px auto;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 10px;
-            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
         }
 
         /* Bubble Styling */
@@ -43,30 +77,21 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: background 0.3s, opacity 1s;
+            position: absolute;
+            user-select: none;
         }
 
-        .bubble.active { background: red; }
-        .bubble.clicked { background: white; opacity: 0.7; }
+        .bubble.active {
+            background: red;
+        }
 
-        /* Header */
-        #header-bar {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            margin: 20px auto;
-            width: 80%;
+        .bubble.clicked {
+            background: white;
+            opacity: 0.7;
         }
     </style>
 </head>
-
 <body>
 
     <!-- Header -->
@@ -88,8 +113,6 @@
         const resetBtn = document.getElementById('reset-btn');
 
         let level = 1, bubblesLeft = 0, timer, timeLeft;
-        let failSound = new Audio('https://www.fesliyanstudios.com/play-mp3/438'); 
-        let successSound = new Audio('https://www.fesliyanstudios.com/play-mp3/6265');
 
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
@@ -102,28 +125,38 @@
 
         function createBubbles() {
             gameContainer.innerHTML = '';
-            let redCount = Math.min(level + 2, 9); // Increase red bubbles each level
-            let positions = Array.from({ length: 9 }, (_, i) => i);
-            shuffleArray(positions);
-            
-            // Create 9 bubbles (dial pad layout)
-            for (let i = 0; i < 9; i++) {
+            let bubbleCount = 10;
+            let activeCount = Math.min(level + 2, 8); // Harder levels have more red circles
+
+            let positions = [];
+
+            for (let i = 0; i < bubbleCount; i++) {
                 let bubble = document.createElement('div');
                 bubble.classList.add('bubble');
                 bubble.addEventListener('click', popBubble);
                 gameContainer.appendChild(bubble);
+
+                let position;
+                do {
+                    position = {
+                        left: getRandomInt(10, gameContainer.clientWidth - 70),
+                        top: getRandomInt(10, gameContainer.clientHeight - 70)
+                    };
+                } while (positions.some(p => Math.hypot(p.left - position.left, p.top - position.top) < 70));
+                positions.push(position);
+
+                bubble.style.left = `${position.left}px`;
+                bubble.style.top = `${position.top}px`;
             }
 
-            let bubbles = document.querySelectorAll('.bubble');
-            for (let i = 0; i < redCount; i++) {
-                bubbles[positions[i]].classList.add('active');
-            }
-
-            bubblesLeft = redCount;
+            let activeBubbles = Array.from(gameContainer.children);
+            for (let i = 0; i < activeCount; i++) activeBubbles[i].classList.add('active');
+            bubblesLeft = activeCount;
             startTimer();
         }
 
         function popBubble(event) {
+            event.preventDefault();
             let target = event.target;
             if (target.classList.contains('active')) {
                 target.classList.remove('active');
@@ -135,13 +168,12 @@
                 }
             } else {
                 document.body.style.background = 'red';
-                failSound.play();
                 setTimeout(resetGame, 1000);
             }
         }
 
         function startTimer() {
-            timeLeft = Math.max(10 - level, 3); // Decrease time each level
+            timeLeft = 10;
             timerDisplay.textContent = 'Timer: ' + timeLeft;
             timer = setInterval(() => {
                 if (timeLeft > 0) {
@@ -156,7 +188,6 @@
         }
 
         function nextLevel() {
-            successSound.play();
             document.body.style.background = 'green';
             if (level < 50) {
                 level++;
@@ -179,13 +210,9 @@
             document.body.style.background = '';
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
     </script>
-
 </body>
 </html>
