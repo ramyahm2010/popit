@@ -1,210 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Speed Pop It Game</title>
     <style>
-        body {
-            text-align: center;
-            transition: background 0.5s ease;
-            background: linear-gradient(45deg, #ff8c00, #ff0080, #00bfff);
-            background-size: 400% 400%;
-            animation: gradientMove 10s infinite alternate;
-        }
+      body {
+        text-align: center;
+        transition: background 0.5s ease;
+        background: linear-gradient(45deg, #ff8c00, #ff0080, #00bfff);
+        background-size: 400% 400%;
+        animation: gradientMove 10s infinite alternate;
+      }
 
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
+      @keyframes gradientMove {
+        0% {
+          background-position: 0% 50%;
         }
-
-        #header-bar {
-            width: 80%;
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 30px;
-            margin: 20px auto;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-            align-items: center;
-            border-radius: 5px;
+        100% {
+          background-position: 100% 50%;
         }
+      }
 
-        #game-container {
-            position: relative;
-            width: 80%;
-            height: 400px;
-            margin: 20px auto;
-            border: 2px solid black;
-            background: white;
-            overflow: hidden;
-        }
+      #header-bar {
+        width: 80%;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 30px;
+        margin: 20px auto;
+        background-color: #4caf50;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        align-items: center;
+        border-radius: 5px;
+      }
 
-        .bubble {
-            width: 60px;
-            height: 60px;
-            background: grey;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid black;
-            transition: background 0.3s, opacity 1s;
-            position: absolute;
-            user-select: none;
-        }
+      #game-container {
+        position: relative;
+        width: 80%;
+        height: 400px;
+        margin: 20px auto;
+        border: 2px solid black;
+        background: white;
+        overflow: hidden;
+      }
 
-        .bubble.active { background: red; }
-        .bubble.clicked { background: white; opacity: 0.7; }
+      .bubble {
+        width: 60px;
+        height: 60px;
+        background: grey;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid black;
+        transition: background 0.3s, opacity 1s;
+        position: absolute;
+        user-select: none;
+        margin-top: 6px;
+      }
 
-        #name-input-section { margin: 20px; }
-        #game-description {
-            margin-top: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 3px black;
-        }
+      .bubble.active {
+        background: red;
+      }
+      .bubble.clicked {
+        background: white;
+        opacity: 0.7;
+      }
+
+      #name-input-section {
+        margin: 20px;
+      }
+      #game-description {
+        margin-top: 15px;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 3px black;
+      }
+
+      #bubble-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 320px; /* Adjust based on the bubble layout */
+        height: 400px; /* Enough to fit the numpad */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        margin-left: 0%;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="header-bar">
-        <div id="timer">Timer: 10</div>
-        <button id="start-btn">Start Game</button>
-        <div id="level-display">Level: 1</div>
-        <div id="user-name"></div>
-        <button id="reset-btn" style="display: none;">Reset Game</button>
+      <div id="timer">Timer: 10</div>
+      <button id="start-btn">Start Game</button>
+      <div id="level-display">Level: 1</div>
+      <div id="user-name"></div>
+      <button id="reset-btn" style="display: none">Reset Game</button>
     </div>
 
     <div id="name-input-section">
-        <input type="text" id="user-name-input" placeholder="Enter your name" />
-        <button id="submit-name">Submit</button>
+      <input type="text" id="user-name-input" placeholder="Enter your name" />
+      <button id="submit-name">Submit</button>
     </div>
 
     <div id="game-container"></div>
 
-    <div id="game-description">Test your reflexes! Click all the red bubbles before time runs out.</div>
+    <div id="game-description">
+      Test your reflexes! Click all the red bubbles before time runs out.
+    </div>
 
     <script>
-        const gameContainer = document.getElementById('game-container');
-        const levelDisplay = document.getElementById('level-display');
-        const timerDisplay = document.getElementById('timer');
-        const startBtn = document.getElementById('start-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const submitNameBtn = document.getElementById('submit-name');
-        const userNameInput = document.getElementById('user-name-input');
-        const userNameDisplay = document.getElementById('user-name');
-        let level = 1, bubblesLeft = 0, timer, timeLeft, userName = '';
+      const gameContainer = document.getElementById("game-container");
+      const levelDisplay = document.getElementById("level-display");
+      const timerDisplay = document.getElementById("timer");
+      const startBtn = document.getElementById("start-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const submitNameBtn = document.getElementById("submit-name");
+      const userNameInput = document.getElementById("user-name-input");
+      const userNameDisplay = document.getElementById("user-name");
+      let level = 1,
+        bubblesLeft = 0,
+        timer,
+        timeLeft,
+        userName = "";
 
-        submitNameBtn.addEventListener('click', () => {
-            userName = userNameInput.value.trim();
-            if (userName) {
-                userNameDisplay.textContent = `Hello, ${userName}`;
-                document.getElementById('name-input-section').style.display = 'none';
-                alert(`Welcome, ${userName}!`);
-            } else alert("Please enter your name.");
-        });
+      submitNameBtn.addEventListener("click", () => {
+        userName = userNameInput.value.trim();
+        if (userName) {
+          userNameDisplay.textContent = `Hello, ${userName}`;
+          document.getElementById("name-input-section").style.display = "none";
+          alert(`Welcome, ${userName}!`);
+        } else alert("Please enter your name.");
+      });
 
-        startBtn.addEventListener('click', startGame);
-        resetBtn.addEventListener('click', resetGame);
+      startBtn.addEventListener("click", startGame);
+      resetBtn.addEventListener("click", resetGame);
 
-        function startGame() {
-            if (!userName) return alert("Please enter your name first.");
-            startBtn.style.display = 'none';
-            resetBtn.style.display = 'inline';
-            createBubbles();
+      function startGame() {
+        if (!userName) return alert("Please enter your name first.");
+        startBtn.style.display = "none";
+        resetBtn.style.display = "inline";
+        createBubbles();
+      }
+
+      function createBubbles() {
+        gameContainer.innerHTML = "";
+
+        // Create a container for bubbles
+        let bubbleContainer = document.createElement("div");
+        bubbleContainer.id = "bubble-container";
+        gameContainer.appendChild(bubbleContainer);
+
+        let positions = [
+          { left: 50, top: 300 }, // Numpad 0
+          { left: 50, top: 200 }, // Numpad 1
+          { left: 150, top: 200 }, // Numpad 2
+          { left: 250, top: 200 }, // Numpad 3
+          { left: 50, top: 100 }, // Numpad 4
+          { left: 150, top: 100 }, // Numpad 5
+          { left: 250, top: 100 }, // Numpad 6
+          { left: 50, top: 0 }, // Numpad 7
+          { left: 150, top: 0 }, // Numpad 8
+          { left: 250, top: 0 }, // Numpad 9
+        ];
+
+        let bubbles = [];
+        for (let i = 0; i < positions.length; i++) {
+          let bubble = document.createElement("div");
+          bubble.classList.add("bubble");
+          bubble.addEventListener("click", popBubble);
+          bubbleContainer.appendChild(bubble);
+          bubble.style.left = `${positions[i].left}px`;
+          bubble.style.top = `${positions[i].top}px`;
+          bubbles.push(bubble);
         }
 
-        function createBubbles() {
-            gameContainer.innerHTML = '';
-            let bubbleCount = 10;
-            let activeCount = Math.min(level + 2, 7);
-            let positions = [];
-
-            for (let i = 0; i < bubbleCount; i++) {
-                let bubble = document.createElement('div');
-                bubble.classList.add('bubble');
-                bubble.addEventListener('click', popBubble);
-                gameContainer.appendChild(bubble);
-
-                let position;
-                do {
-                    position = {
-                        left: getRandomInt(10, gameContainer.clientWidth - 70),
-                        top: getRandomInt(10, gameContainer.clientHeight - 70)
-                    };
-                } while (positions.some(p => Math.hypot(p.left - position.left, p.top - position.top) < 70));
-                positions.push(position);
-
-                bubble.style.left = `${position.left}px`;
-                bubble.style.top = `${position.top}px`;
-            }
-
-            let activeBubbles = Array.from(gameContainer.children);
-            for (let i = 0; i < activeCount; i++) activeBubbles[i].classList.add('active');
-            bubblesLeft = activeCount;
-            startTimer();
+        // Randomly select red active bubbles
+        let activeIndices = new Set();
+        while (activeIndices.size < Math.min(level + 2, 7)) {
+          activeIndices.add(getRandomInt(0, 9));
         }
 
-        function popBubble(event) {
-            let target = event.target;
-            if (target.classList.contains('active')) {
-                target.classList.remove('active');
-                target.classList.add('clicked');
-                bubblesLeft--;
-                if (bubblesLeft === 0) {
-                    clearInterval(timer);
-                    setTimeout(nextLevel, 1000);
-                }
-            } else {
-                document.body.style.background = 'red';
-                setTimeout(resetGame, 1000);
-            }
-        }
+        activeIndices.forEach((index) =>
+          bubbles[index].classList.add("active")
+        );
+        bubblesLeft = activeIndices.size;
+        startTimer();
+      }
 
-        function startTimer() {
-            timeLeft = Math.max(10 - level, 3);
-            timerDisplay.textContent = 'Timer: ' + timeLeft;
-            timer = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    timerDisplay.textContent = 'Timer: ' + timeLeft;
-                } else {
-                    clearInterval(timer);
-                    alert('Game Over! Time ran out.');
-                    resetGame();
-                }
-            }, 1000);
-        }
-
-        function nextLevel() {
-            document.body.style.background = 'green';
-            setTimeout(() => document.body.style.background = '', 500);
-            if (level < 50) {
-                level++;
-                levelDisplay.textContent = 'Level: ' + level;
-                setTimeout(createBubbles, 1000);
-            } else {
-                alert('Congratulations! You finished all levels!');
-                resetGame();
-            }
-        }
-
-        function resetGame() {
+      function popBubble(event) {
+        let target = event.target;
+        if (target.classList.contains("active")) {
+          target.classList.remove("active");
+          target.classList.add("clicked");
+          bubblesLeft--;
+          if (bubblesLeft === 0) {
             clearInterval(timer);
-            level = 1;
-            levelDisplay.textContent = 'Level: ' + level;
-            timerDisplay.textContent = 'Timer: 10';
-            startBtn.style.display = 'inline';
-            resetBtn.style.display = 'none';
-            gameContainer.innerHTML = '';
-            document.body.style.background = '';
+            setTimeout(nextLevel, 1000);
+          }
+        } else {
+          document.body.style.background = "red";
+          setTimeout(resetGame, 1000);
         }
+      }
 
-        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+      function startTimer() {
+        timeLeft = Math.max(10, 3);
+        timerDisplay.textContent = "Timer: " + timeLeft;
+        timer = setInterval(() => {
+          if (timeLeft > 0) {
+            timeLeft--;
+            timerDisplay.textContent = "Timer: " + timeLeft;
+          } else {
+            clearInterval(timer);
+            alert("Game Over! Time ran out.");
+            resetGame();
+          }
+        }, 1000);
+      }
+
+      function nextLevel() {
+        document.body.style.background = "green";
+        setTimeout(() => (document.body.style.background = ""), 500);
+        if (level < 50) {
+          level++;
+          levelDisplay.textContent = "Level: " + level;
+          setTimeout(createBubbles, 1000);
+        } else {
+          alert("Congratulations! You finished all levels!");
+          resetGame();
+        }
+      }
+
+      function resetGame() {
+        clearInterval(timer);
+        level = 1;
+        levelDisplay.textContent = "Level: " + level;
+        timerDisplay.textContent = "Timer: 10";
+        startBtn.style.display = "inline";
+        resetBtn.style.display = "none";
+        gameContainer.innerHTML = "";
+        document.body.style.background = "";
+      }
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
     </script>
-</body>
-
+  </body>
 </html>
