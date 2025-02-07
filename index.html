@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Pop It Game</title>
     <style>
-        /* General Styles */
         body {
             text-align: center;
             transition: background 0.5s ease;
@@ -20,33 +19,30 @@
             100% { background-position: 100% 50%; }
         }
 
-        /* Header Bar */
-#header-bar {
-    width: 80%;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 30px;
-    margin: 20px auto;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    align-items: center;
-    border-radius: 5px;
-
-}
+        #header-bar {
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 30px;
+            margin: 20px auto;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            align-items: center;
+            border-radius: 5px;
+        }
 
         #game-container {
-    position: relative;
-    width: 80%;
-    height: 400px; /* Adjust height as needed */
-    margin: 20px auto;
-    border: 2px solid black;
-    background: white;
-    overflow: hidden;
-}
+            position: relative;
+            width: 80%;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid black;
+            background: white;
+            overflow: hidden;
+        }
 
-        /* Bubble Styling */
         .bubble {
             width: 60px;
             height: 60px;
@@ -59,21 +55,10 @@
             user-select: none;
         }
 
-        .bubble.active {
-            background: red;
-        }
+        .bubble.active { background: red; }
+        .bubble.clicked { background: white; opacity: 0.7; }
 
-        .bubble.clicked {
-            background: white;
-            opacity: 0.7;
-        }
-
-        /* Name Input */
-        #name-input-section {
-            margin: 20px;
-        }
-
-        /* Game Description */
+        #name-input-section { margin: 20px; }
         #game-description {
             margin-top: 15px;
             font-size: 16px;
@@ -81,13 +66,10 @@
             color: white;
             text-shadow: 1px 1px 3px black;
         }
-
     </style>
 </head>
 
 <body>
-
-    <!-- Header -->
     <div id="header-bar">
         <div id="timer">Timer: 10</div>
         <button id="start-btn">Start Game</button>
@@ -96,19 +78,14 @@
         <button id="reset-btn" style="display: none;">Reset Game</button>
     </div>
 
-    <!-- Name Input -->
     <div id="name-input-section">
         <input type="text" id="user-name-input" placeholder="Enter your name" />
         <button id="submit-name">Submit</button>
     </div>
 
-    <!-- Game Container -->
     <div id="game-container"></div>
 
-    <!-- Game Description -->
-    <div id="game-description">
-        Test your reflexes in the Speed Pop It Game! Click all the red bubbles before time runs out. Each level gets harder—how far can you go?
-    </div>
+    <div id="game-description">Test your reflexes! Click all the red bubbles before time runs out.</div>
 
     <script>
         const gameContainer = document.getElementById('game-container');
@@ -143,7 +120,7 @@
         function createBubbles() {
             gameContainer.innerHTML = '';
             let bubbleCount = 10;
-            let activeCount = Math.min(level + 2, 7); // Increase active bubbles each level
+            let activeCount = Math.min(level + 2, 7);
             let positions = [];
 
             for (let i = 0; i < bubbleCount; i++) {
@@ -188,7 +165,7 @@
         }
 
         function startTimer() {
-            timeLeft = Math.max(10 - level, 3); // Timer decreases each level
+            timeLeft = Math.max(10 - level, 3);
             timerDisplay.textContent = 'Timer: ' + timeLeft;
             timer = setInterval(() => {
                 if (timeLeft > 0) {
@@ -227,7 +204,6 @@
         }
 
         function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
     </script>
 </body>
 
